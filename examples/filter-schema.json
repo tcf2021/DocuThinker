@@ -1,0 +1,202 @@
+{
+  "$defs": {
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "enum": [
+            "query",
+            "chat_history",
+            "user_context"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "quote"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Predicate": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "pattern": "^(metadata|attributes)\\.[a-z][a-z0-9_]{0,39}$",
+          "title": "Field",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "in",
+            "contains_any",
+            "contains_all",
+            "gte",
+            "lt"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 24,
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Evidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "field",
+        "operator",
+        "values"
+      ],
+      "title": "Predicate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "doc_types": {
+      "items": {
+        "enum": [
+          "policy",
+          "exception",
+          "ledger",
+          "incident",
+          "receipt",
+          "manual",
+          "report",
+          "contract",
+          "invoice",
+          "article",
+          "faq",
+          "record",
+          "other"
+        ],
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Doc Types",
+      "type": "array"
+    },
+    "versions": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Versions",
+      "type": "array"
+    },
+    "organizations": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Organizations",
+      "type": "array"
+    },
+    "locations": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Locations",
+      "type": "array"
+    },
+    "topics": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Topics",
+      "type": "array"
+    },
+    "entities": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Entities",
+      "type": "array"
+    },
+    "entity_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 24,
+      "title": "Entity Ids",
+      "type": "array"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Tags",
+      "type": "array"
+    },
+    "attributes": {
+      "maxProperties": 24,
+      "patternProperties": {
+        "^[a-z][a-z0-9_]{0,39}$": {
+          "items": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "title": "Attributes",
+      "type": "object"
+    },
+    "effective_at": {
+      "default": "",
+      "title": "Effective At",
+      "type": "string"
+    },
+    "conditions": {
+      "items": {
+        "$ref": "#/$defs/Predicate"
+      },
+      "maxItems": 16,
+      "title": "Conditions",
+      "type": "array"
+    },
+    "logic": {
+      "default": "and",
+      "enum": [
+        "and",
+        "or"
+      ],
+      "title": "Logic",
+      "type": "string"
+    }
+  },
+  "title": "Filters",
+  "type": "object"
+}

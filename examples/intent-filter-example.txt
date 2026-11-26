@@ -1,0 +1,1 @@
+(json_contains_any(attributes["department"], ["研发部"])) and (metadata["ingested_at"] >= "2026-01-01T08:00:00+00:00") and (metadata["ingested_at"] < "2027-01-01T08:00:00+00:00")

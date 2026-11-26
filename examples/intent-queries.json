@@ -1,0 +1,57 @@
+[
+  {
+    "question": "比较 V1.3 和 V2.0 的定标帧保留期限",
+    "filters": {},
+    "expected_documents": [
+      "01_policy_v13.pdf",
+      "02_policy_v20.pdf"
+    ]
+  },
+  {
+    "question": "SN-609 适用哪种保留期限？",
+    "filters": {},
+    "expected_documents": [
+      "02_policy_v20.pdf",
+      "03_batch_ledger.pdf",
+      "04_exception_EX17.pdf"
+    ]
+  },
+  {
+    "question": "南站定标帧例外的核准值是多少？",
+    "filters": {
+      "doc_types": [
+        "exception"
+      ]
+    },
+    "expected_documents": [
+      "04_exception_EX17.pdf"
+    ]
+  },
+  {
+    "question": "IR-27 从告警确认到恢复写入用了多久？",
+    "filters": {},
+    "expected_documents": [
+      "05_incident_IR27.pdf"
+    ]
+  },
+  {
+    "question": "SN-609 与 BN-609 的验收日期分别是什么？",
+    "filters": {
+      "doc_types": [
+        "ledger"
+      ]
+    },
+    "expected_documents": [
+      "03_batch_ledger.pdf"
+    ]
+  },
+  {
+    "question": "原始科学帧保留多少天？",
+    "filters": {
+      "versions": [
+        "9.9"
+      ]
+    },
+    "expected_documents": []
+  }
+]

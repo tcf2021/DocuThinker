@@ -1,0 +1,45 @@
+{
+  "intent": "policy_lookup",
+  "semantic_query": "研发部制度适用规则",
+  "confidence": 0.95,
+  "filters": {
+    "logic": "and",
+    "conditions": [
+      {
+        "field": "attributes.department",
+        "operator": "contains_any",
+        "values": [
+          "研发部"
+        ],
+        "evidence": {
+          "source": "query",
+          "quote": "我们部门"
+        }
+      },
+      {
+        "field": "metadata.ingested_at",
+        "operator": "gte",
+        "values": [
+          "2026-01-01T00:00:00-08:00"
+        ],
+        "evidence": {
+          "source": "query",
+          "quote": "今年入库"
+        }
+      },
+      {
+        "field": "metadata.ingested_at",
+        "operator": "lt",
+        "values": [
+          "2027-01-01T00:00:00-08:00"
+        ],
+        "evidence": {
+          "source": "query",
+          "quote": "今年入库"
+        }
+      }
+    ]
+  },
+  "needs_clarification": false,
+  "clarifying_question": ""
+}

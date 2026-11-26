@@ -1,0 +1,123 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "default": "",
+      "maxLength": 240,
+      "title": "Title",
+      "type": "string"
+    },
+    "doc_type": {
+      "default": "other",
+      "enum": [
+        "policy",
+        "exception",
+        "ledger",
+        "incident",
+        "receipt",
+        "manual",
+        "report",
+        "contract",
+        "invoice",
+        "article",
+        "faq",
+        "record",
+        "other"
+      ],
+      "title": "Doc Type",
+      "type": "string"
+    },
+    "organization": {
+      "default": "",
+      "maxLength": 120,
+      "title": "Organization",
+      "type": "string"
+    },
+    "version": {
+      "default": "",
+      "maxLength": 40,
+      "title": "Version",
+      "type": "string"
+    },
+    "language": {
+      "default": "unknown",
+      "enum": [
+        "zh",
+        "en",
+        "mixed",
+        "unknown"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "effective_from": {
+      "default": "",
+      "title": "Effective From",
+      "type": "string"
+    },
+    "effective_to": {
+      "default": "",
+      "title": "Effective To",
+      "type": "string"
+    },
+    "topics": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 40,
+      "title": "Topics",
+      "type": "array"
+    },
+    "locations": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 40,
+      "title": "Locations",
+      "type": "array"
+    },
+    "entities": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 40,
+      "title": "Entities",
+      "type": "array"
+    },
+    "entity_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 200,
+      "title": "Entity Ids",
+      "type": "array"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 40,
+      "title": "Tags",
+      "type": "array"
+    },
+    "attributes": {
+      "maxProperties": 24,
+      "patternProperties": {
+        "^[a-z][a-z0-9_]{0,39}$": {
+          "items": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "title": "Attributes",
+      "type": "object"
+    }
+  },
+  "title": "DocumentMetadata",
+  "type": "object"
+}

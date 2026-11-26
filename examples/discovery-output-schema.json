@@ -1,0 +1,103 @@
+{
+  "$defs": {
+    "DiscoveredField": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/FieldEvidence"
+          },
+          "maxItems": 24,
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "description",
+        "values",
+        "evidence"
+      ],
+      "title": "DiscoveredField",
+      "type": "object"
+    },
+    "FieldEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        },
+        "chunk_id": {
+          "minimum": 0,
+          "title": "Chunk Id",
+          "type": "integer"
+        },
+        "page": {
+          "minimum": 0,
+          "title": "Page",
+          "type": "integer"
+        },
+        "quote": {
+          "maxLength": 800,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "chunk_id",
+        "page",
+        "quote"
+      ],
+      "title": "FieldEvidence",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/DiscoveredField"
+      },
+      "maxItems": 24,
+      "title": "Fields",
+      "type": "array"
+    }
+  },
+  "title": "Discovery",
+  "type": "object"
+}

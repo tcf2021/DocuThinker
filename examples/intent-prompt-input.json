@@ -1,0 +1,207 @@
+{
+  "query": "今年入库的我们部门制度",
+  "chat_history": [],
+  "user_context": {
+    "user_id": "demo-user",
+    "department": "研发部",
+    "allowed_kb_ids": [
+      "demo-kb"
+    ],
+    "selected_kb_id": "demo-kb"
+  },
+  "metadata_schema": {
+    "filterable_fields": [
+      {
+        "field": "attributes.department",
+        "type": "string_array",
+        "label": "适用部门",
+        "description": "本制度实际适用的部门；不等于用户权限",
+        "operators": [
+          "contains_any",
+          "contains_all"
+        ],
+        "examples": [
+          "研发部",
+          "财务部"
+        ]
+      },
+      {
+        "field": "metadata.ingested_at",
+        "type": "datetime",
+        "label": "入库时间",
+        "description": "UTC 入库时间，不是生效日期",
+        "operators": [
+          "eq",
+          "in",
+          "gte",
+          "lt"
+        ],
+        "examples": [
+          "2026-11-01T00:00:00+00:00"
+        ]
+      }
+    ]
+  },
+  "current_time": "2026-11-26T10:00:00-08:00",
+  "categories": [
+    "lookup",
+    "comparison",
+    "calculation",
+    "policy_lookup",
+    "general"
+  ],
+  "output_schema": {
+    "$defs": {
+      "DynamicFilters": {
+        "additionalProperties": false,
+        "properties": {
+          "logic": {
+            "default": "and",
+            "enum": [
+              "and",
+              "or"
+            ],
+            "title": "Logic",
+            "type": "string"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/$defs/Predicate"
+            },
+            "maxItems": 16,
+            "title": "Conditions",
+            "type": "array"
+          }
+        },
+        "title": "DynamicFilters",
+        "type": "object"
+      },
+      "Evidence": {
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "enum": [
+              "query",
+              "chat_history",
+              "user_context"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "quote": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Quote",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "quote"
+        ],
+        "title": "Evidence",
+        "type": "object"
+      },
+      "Predicate": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "pattern": "^(metadata|attributes)\\.[a-z][a-z0-9_]{0,39}$",
+            "title": "Field",
+            "type": "string",
+            "enum": [
+              "attributes.department",
+              "metadata.ingested_at"
+            ]
+          },
+          "operator": {
+            "enum": [
+              "eq",
+              "in",
+              "contains_any",
+              "contains_all",
+              "gte",
+              "lt"
+            ],
+            "title": "Operator",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 24,
+            "minItems": 1,
+            "title": "Values",
+            "type": "array"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Evidence"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "field",
+          "operator",
+          "values"
+        ],
+        "title": "Predicate",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "intent": {
+        "enum": [
+          "lookup",
+          "comparison",
+          "calculation",
+          "policy_lookup",
+          "general"
+        ],
+        "title": "Intent",
+        "type": "string"
+      },
+      "semantic_query": {
+        "maxLength": 2000,
+        "minLength": 1,
+        "title": "Semantic Query",
+        "type": "string"
+      },
+      "filters": {
+        "$ref": "#/$defs/DynamicFilters"
+      },
+      "confidence": {
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "needs_clarification": {
+        "default": false,
+        "title": "Needs Clarification",
+        "type": "boolean"
+      },
+      "clarifying_question": {
+        "default": "",
+        "maxLength": 500,
+        "title": "Clarifying Question",
+        "type": "string"
+      }
+    },
+    "required": [
+      "intent",
+      "semantic_query",
+      "confidence"
+    ],
+    "title": "IntentOutput",
+    "type": "object"
+  }
+}

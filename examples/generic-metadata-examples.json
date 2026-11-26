@@ -1,0 +1,303 @@
+[
+  {
+    "filename": "human-resources.pdf",
+    "source_text": "员工报销制度 V2.0\n所属单位：示例公司\n主题：差旅报销\n适用部门：研发部\n报销类型：差旅费\n生效日期：2026-01-01\n有效至：2026-12-31",
+    "metadata": {
+      "title": "员工报销制度 V2.0",
+      "doc_type": "policy",
+      "organization": "示例公司",
+      "version": "2.0",
+      "language": "zh",
+      "effective_from": "2026-01-01",
+      "effective_to": "2026-12-31",
+      "topics": [
+        "差旅报销"
+      ],
+      "locations": [],
+      "entities": [],
+      "entity_ids": [],
+      "tags": [],
+      "attributes": {
+        "department": [
+          "研发部"
+        ],
+        "expense_type": [
+          "差旅费"
+        ]
+      }
+    },
+    "provenance": {
+      "title": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "员工报销制度 V2.0\n所属单位：示例公司\n主题：差旅报销\n适用部门：研发部\n报销类型：差旅费\n生效日期：2026-01-01\n有效至：2026-12-31",
+          "filename": "human-resources.pdf"
+        }
+      ],
+      "doc_type": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "员工报销制度 V2.0\n所属单位：示例公司\n主题：差旅报销\n适用部门：研发部\n报销类型：差旅费\n生效日期：2026-01-01\n有效至：2026-12-31",
+          "filename": "human-resources.pdf"
+        }
+      ],
+      "organization": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "所属单位：示例公司"
+        }
+      ],
+      "version": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "员工报销制度 V2.0\n所属单位：示例公司\n主题：差旅报销\n适用部门：研发部\n报销类型：差旅费\n生效日期：2026-01-01\n有效至：2026-12-31",
+          "filename": "human-resources.pdf"
+        }
+      ],
+      "language": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "员工报销制度 V2.0\n所属单位：示例公司\n主题：差旅报销\n适用部门：研发部\n报销类型：差旅费\n生效日期：2026-01-01\n有效至：2026-12-31",
+          "filename": "human-resources.pdf"
+        }
+      ],
+      "effective_from": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "生效日期：2026-01-01"
+        }
+      ],
+      "effective_to": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "有效至：2026-12-31"
+        }
+      ],
+      "topics": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "主题：差旅报销"
+        }
+      ],
+      "attributes.department": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "适用部门：研发部"
+        }
+      ],
+      "attributes.expense_type": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "报销类型：差旅费"
+        }
+      ]
+    },
+    "method": "rules",
+    "schema_version": 3,
+    "example_filters": {
+      "attributes": {
+        "department": [
+          "研发部"
+        ],
+        "expense_type": [
+          "差旅费"
+        ]
+      }
+    }
+  },
+  {
+    "filename": "product-manual.pdf",
+    "source_text": "产品操作手册 V1.1\n产品型号：ZX-100\n地点：上海\n属性 firmware: 3.2",
+    "metadata": {
+      "title": "产品操作手册 V1.1",
+      "doc_type": "manual",
+      "organization": "",
+      "version": "1.1",
+      "language": "mixed",
+      "effective_from": "",
+      "effective_to": "",
+      "topics": [],
+      "locations": [
+        "上海"
+      ],
+      "entities": [],
+      "entity_ids": [
+        "ZX-100"
+      ],
+      "tags": [],
+      "attributes": {
+        "product": [
+          "ZX-100"
+        ],
+        "firmware": [
+          "3.2"
+        ]
+      }
+    },
+    "provenance": {
+      "title": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "产品操作手册 V1.1\n产品型号：ZX-100\n地点：上海\n属性 firmware: 3.2",
+          "filename": "product-manual.pdf"
+        }
+      ],
+      "doc_type": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "产品操作手册 V1.1\n产品型号：ZX-100\n地点：上海\n属性 firmware: 3.2",
+          "filename": "product-manual.pdf"
+        }
+      ],
+      "version": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "产品操作手册 V1.1\n产品型号：ZX-100\n地点：上海\n属性 firmware: 3.2",
+          "filename": "product-manual.pdf"
+        }
+      ],
+      "language": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "产品操作手册 V1.1\n产品型号：ZX-100\n地点：上海\n属性 firmware: 3.2",
+          "filename": "product-manual.pdf"
+        }
+      ],
+      "locations": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "地点：上海"
+        }
+      ],
+      "entity_ids": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "产品型号：ZX-100"
+        }
+      ],
+      "attributes.product": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "产品型号：ZX-100"
+        }
+      ],
+      "attributes.firmware": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "属性 firmware: 3.2"
+        }
+      ]
+    },
+    "method": "rules",
+    "schema_version": 3,
+    "example_filters": {
+      "attributes": {
+        "product": [
+          "ZX-100"
+        ],
+        "firmware": [
+          "3.2"
+        ]
+      }
+    }
+  },
+  {
+    "filename": "purchase-contract.pdf",
+    "source_text": "采购合同\n编号：2026008\n所属单位：示例公司\n属性 supplier: 示例供应商",
+    "metadata": {
+      "title": "采购合同",
+      "doc_type": "contract",
+      "organization": "示例公司",
+      "version": "",
+      "language": "mixed",
+      "effective_from": "",
+      "effective_to": "",
+      "topics": [],
+      "locations": [],
+      "entities": [],
+      "entity_ids": [
+        "2026008"
+      ],
+      "tags": [],
+      "attributes": {
+        "supplier": [
+          "示例供应商"
+        ]
+      }
+    },
+    "provenance": {
+      "title": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "采购合同\n编号：2026008\n所属单位：示例公司\n属性 supplier: 示例供应商",
+          "filename": "purchase-contract.pdf"
+        }
+      ],
+      "doc_type": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "采购合同\n编号：2026008\n所属单位：示例公司\n属性 supplier: 示例供应商",
+          "filename": "purchase-contract.pdf"
+        }
+      ],
+      "organization": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "所属单位：示例公司"
+        }
+      ],
+      "language": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "采购合同\n编号：2026008\n所属单位：示例公司\n属性 supplier: 示例供应商",
+          "filename": "purchase-contract.pdf"
+        }
+      ],
+      "entity_ids": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "编号：2026008"
+        }
+      ],
+      "attributes.supplier": [
+        {
+          "source": "rules",
+          "page": 1,
+          "quote": "属性 supplier: 示例供应商"
+        }
+      ]
+    },
+    "method": "rules",
+    "schema_version": 3,
+    "example_filters": {
+      "attributes": {
+        "supplier": [
+          "示例供应商"
+        ]
+      }
+    }
+  }
+]

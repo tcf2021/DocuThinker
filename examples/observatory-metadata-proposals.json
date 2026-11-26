@@ -1,0 +1,158 @@
+[
+  {
+    "filename": "01_policy_v13.pdf",
+    "metadata": {
+      "title": "ARCHIVE POLICY   /   CY-AR-13",
+      "doc_type": "policy",
+      "organization": "澄野天文台",
+      "version": "1.3",
+      "language": "mixed",
+      "effective_from": "",
+      "effective_to": "",
+      "topics": [
+        "定标",
+        "原始科学数据",
+        "预览",
+        "审计"
+      ],
+      "locations": [
+        "北站"
+      ],
+      "entities": [],
+      "entity_ids": [
+        "CY-AR-13"
+      ],
+      "tags": [],
+      "attributes": {}
+    },
+    "chunks": 4,
+    "method": "v2_migration_example",
+    "schema_version": 3
+  },
+  {
+    "filename": "02_policy_v20.pdf",
+    "metadata": {
+      "title": "ARCHIVE POLICY   /   CY-AR-20",
+      "doc_type": "policy",
+      "organization": "澄野天文台",
+      "version": "2.0",
+      "language": "mixed",
+      "effective_from": "",
+      "effective_to": "",
+      "topics": [
+        "定标",
+        "原始科学数据",
+        "预览",
+        "审计"
+      ],
+      "locations": [
+        "南站",
+        "北站"
+      ],
+      "entities": [],
+      "entity_ids": [
+        "CY-AR-20"
+      ],
+      "tags": [],
+      "attributes": {}
+    },
+    "chunks": 4,
+    "method": "v2_migration_example",
+    "schema_version": 3
+  },
+  {
+    "filename": "03_batch_ledger.pdf",
+    "metadata": {
+      "title": "BATCH LEDGER   /   CY-LG-06",
+      "doc_type": "ledger",
+      "organization": "澄野天文台",
+      "version": "",
+      "language": "mixed",
+      "effective_from": "",
+      "effective_to": "",
+      "topics": [
+        "定标",
+        "原始科学数据",
+        "预览"
+      ],
+      "locations": [
+        "南站",
+        "北站"
+      ],
+      "entities": [],
+      "entity_ids": [
+        "CY-LG-06",
+        "BN-531",
+        "BN-601",
+        "SN-607",
+        "SN-608",
+        "SN-609",
+        "SN-610",
+        "BN-609",
+        "BN-611",
+        "BN-60"
+      ],
+      "tags": [],
+      "attributes": {}
+    },
+    "chunks": 6,
+    "method": "v2_migration_example",
+    "schema_version": 3
+  },
+  {
+    "filename": "04_exception_EX17.pdf",
+    "metadata": {
+      "title": "RETENTION EXCEPTION   /   EX-17",
+      "doc_type": "exception",
+      "organization": "澄野天文台",
+      "version": "",
+      "language": "mixed",
+      "effective_from": "",
+      "effective_to": "",
+      "topics": [
+        "定标",
+        "原始科学数据"
+      ],
+      "locations": [
+        "南站",
+        "北站"
+      ],
+      "entities": [],
+      "entity_ids": [
+        "EX-17",
+        "CY-AR-20"
+      ],
+      "tags": [],
+      "attributes": {}
+    },
+    "chunks": 4,
+    "method": "v2_migration_example",
+    "schema_version": 3
+  },
+  {
+    "filename": "05_incident_IR27.pdf",
+    "metadata": {
+      "title": "INCIDENT REVIEW   /   IR-27",
+      "doc_type": "incident",
+      "organization": "澄野天文台",
+      "version": "",
+      "language": "mixed",
+      "effective_from": "",
+      "effective_to": "",
+      "topics": [],
+      "locations": [
+        "南站"
+      ],
+      "entities": [],
+      "entity_ids": [
+        "IR-27",
+        "CY-AR-20"
+      ],
+      "tags": [],
+      "attributes": {}
+    },
+    "chunks": 3,
+    "method": "v2_migration_example",
+    "schema_version": 3
+  }
+]
