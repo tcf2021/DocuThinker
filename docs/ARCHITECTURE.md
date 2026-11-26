@@ -1,6 +1,6 @@
 # DocuThinker · 实际架构
 
-本仓库延续已有 Python/FastAPI 项目，没有重建为 React/Node.js 项目。核心存储版本维持 v3，应用版本更新为 5.0。
+平台使用 Python/FastAPI 提供 API，原生 JavaScript 提供浏览器界面，结合 MinerU、MinIO、Milvus、LangGraph 和 CrewAI 完成文档处理与问答。当前应用版本为 5.0，存储 Schema 为 v3。
 
 ```mermaid
 flowchart TD
