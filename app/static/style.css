@@ -1,0 +1,339 @@
+@font-face {
+  font-family: "DocLab Han";
+  src: url("/static/doclab-han.woff") format("woff");
+  font-display: swap;
+}
+:root {
+  --ink: #173433;
+  --soft: #536a66;
+  --green: #165f54;
+  --line: #d8e2dc;
+  --bg: #f2f5ef;
+  --warm: #fbfcf8;
+}
+* {
+  box-sizing: border-box;
+}
+[hidden] {
+  display: none !important;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font:
+    15px/1.65 "Microsoft YaHei",
+    "PingFang SC",
+    "DocLab Han",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #133e39;
+  color: #fff;
+  padding: 13px max(24px, calc((100% - 1160px) / 2));
+  border-bottom: 3px solid #8cb798;
+}
+header strong {
+  letter-spacing: 0.12em;
+  font-size: 20px;
+}
+.mark {
+  background: #dfedb5;
+  color: #19483e;
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 8px;
+  font-size: 23px;
+}
+.brand-en,
+.eyebrow {
+  font:
+    600 10px/1.4 ui-monospace,
+    "DocLab Han",
+    monospace;
+  letter-spacing: 0.15em;
+}
+.brand-en {
+  opacity: 0.75;
+}
+.eyebrow {
+  color: #487a67;
+}
+.account {
+  margin-left: auto;
+  color: #deeddf;
+  font-size: 13px;
+}
+header .quiet {
+  color: #eef8ee;
+  border-color: #62857c;
+  background: transparent;
+}
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 22px 70px;
+}
+.mast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 23px;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+h1 {
+  font-size: clamp(30px, 4vw, 44px);
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+  margin: 5px 0 8px;
+}
+h2 {
+  font-size: 21px;
+  margin: 4px 0 10px;
+}
+h3 {
+  font-size: 16px;
+}
+.mast p,
+.card p,
+small {
+  color: var(--soft);
+}
+.card p {
+  margin-bottom: 12px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 255px minmax(0, 1fr);
+  gap: 18px;
+}
+aside,
+.work,
+.stack {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.card {
+  background: var(--warm);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 22px;
+}
+.login {
+  max-width: 440px;
+  margin: 8vh auto;
+}
+.login small,
+small {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+}
+.login form,
+aside form {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+.stack {
+  gap: 8px;
+}
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--soft);
+  font-weight: 600;
+}
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  margin: 5px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #bccdc3;
+  border-radius: 7px;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+textarea {
+  resize: vertical;
+}
+button,
+.quiet {
+  font:
+    600 13px/1.5 "Microsoft YaHei",
+    "DocLab Han",
+    system-ui,
+    sans-serif;
+  border: 1px solid var(--green);
+  border-radius: 7px;
+  background: var(--green);
+  color: white;
+  padding: 9px 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+button:disabled {
+  opacity: 0.48;
+  cursor: wait;
+}
+.second {
+  background: #e6efe4;
+  color: #244b41;
+  border-color: #c3d7c5;
+}
+.quiet {
+  background: transparent;
+  color: #31594c;
+  border-color: #c6d6ca;
+}
+.upload,
+.actions,
+.links {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.upload input {
+  flex: 1;
+  min-width: 180px;
+  margin: 0;
+  border-style: dashed;
+}
+.actions {
+  margin-top: 12px;
+}
+.doc,
+.cite,
+.trace,
+.check {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.doc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+.doc strong,
+.trace,
+.cite,
+.check {
+  overflow-wrap: anywhere;
+}
+.pill {
+  font-size: 12px;
+  margin-right: 8px;
+  padding: 2px 7px;
+  background: #e3ede2;
+  border-radius: 4px;
+}
+.fail {
+  color: #983d34;
+}
+.trace,
+.cite {
+  background: #f0f4ec;
+  padding: 12px 14px;
+  border-radius: 7px;
+}
+.quote {
+  border-left: 3px solid #84a879;
+  padding: 4px 10px;
+  white-space: pre-wrap;
+  margin: 8px 0;
+}
+a {
+  color: #175f50;
+}
+.links a {
+  font-size: 13px;
+}
+.check {
+  font-size: 12px;
+}
+.answertext {
+  white-space: pre-wrap;
+  margin: 13px 0;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 3px solid #86ad6a;
+  outline-offset: 2px;
+}
+#note:not(:empty) {
+  position: fixed;
+  left: 50%;
+  bottom: 15px;
+  transform: translateX(-50%);
+  background: #183b36;
+  color: white;
+  max-width: min(90vw, 700px);
+  padding: 9px 18px;
+  border-radius: 8px;
+  box-shadow: 0 3px 12px #1233;
+}
+.login form button {
+  margin-top: 4px;
+}
+.trace summary {
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  main {
+    padding: 18px 12px 65px;
+  }
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 17px;
+  }
+  .brand-en {
+    display: none;
+  }
+  .mast {
+    gap: 10px;
+  }
+  .doc {
+    align-items: flex-start;
+  }
+  .account {
+    min-width: 0;
+  }
+}
+
+.index-tools {margin: 14px 0; align-items: center; flex-wrap: wrap;}
+.job {padding: 10px 14px; margin: 8px 0; border-left: 3px solid #bd9444; background: #faf7ee; font-size: 14px;}
+.filter-grid {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0;}
+.filters, .intent {padding: 14px; margin: 12px 0; border: 1px solid #d6e3d9; border-radius: 10px; background: #f8fbf8;}
+summary {cursor: pointer; font-weight: 600;}
+.hint {color: #795b26;}
+pre {white-space: pre-wrap; overflow-wrap: anywhere; max-height: 350px; overflow: auto; font-size: 12px;}
+dialog {width: min(760px, calc(100vw - 32px)); max-height: 90vh; box-sizing: border-box; padding: 24px; border: 1px solid #bccdc2; border-radius: 16px; color: #263d33; background: #fff;}
+dialog::backdrop {background: rgb(15 33 23 / 45%);}
+#metadataJSON {font-family: ui-monospace, monospace; font-size: 13px;}
+#rollbackControls {margin-top: 20px; border-top: 1px solid #d6e3d9; padding-top: 16px;}
+@media (max-width: 650px) {.filter-grid {grid-template-columns: 1fr;} dialog {padding: 16px;}}
