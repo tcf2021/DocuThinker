@@ -68,7 +68,7 @@ def main():
                     "question": case["question"],
                     "filters": case["filters"],
                     "mode": "search",
-                    "planner": "rules",
+                    "planner": "llm",
                 },
             )
             actual = sorted({r["filename"] for r in result["sources"]})

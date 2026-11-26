@@ -98,8 +98,8 @@ def main():
     p.add_argument("--network", help="Name of the existing MinIO Docker network")
     p.add_argument(
         "--intent-mode",
-        choices=["auto", "rules", "llm", "manual"],
-        help="Intent planner mode; rules makes no intent-model call",
+        choices=["auto", "llm", "manual"],
+        help="Intent planner mode; manual skips intent-model calls",
     )
     p.add_argument(
         "--chat",

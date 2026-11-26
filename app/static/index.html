@@ -10,13 +10,11 @@
   <body>
     <header>
       <span class="mark">▤</span><strong>DocuThinker</strong
-      ><span class="brand-en">DOCUMENT INTELLIGENCE</span
       ><span class="account" id="identity"></span
       ><button id="logout" class="quiet" hidden>退出</button>
     </header>
     <main>
       <section id="loginScreen" class="login card">
-        <span class="eyebrow">LOCAL WORKSPACE</span>
         <h1>文档知识库</h1>
         <p>从一份 PDF 开始，找到答案，也找到它在原文中的位置。</p>
         <form id="loginForm">
@@ -40,7 +38,6 @@
       <section id="desk" hidden>
         <div class="mast">
           <div>
-            <span class="eyebrow">DOCUMENT AGENT &nbsp; / &nbsp; LOCAL</span>
             <h1>文档工作台</h1>
             <p>识别问题意图，筛选资料范围，核对答案出处。</p>
           </div>
@@ -48,10 +45,46 @@
             >API 文档 ↗</a
           >
         </div>
-        <div class="layout">
+        <div class="workspace">
+          <section class="card">
+            <h2>向知识库提问</h2>
+            <form id="askForm">
+              <label
+                >问题<textarea
+                  id="question"
+                  rows="3"
+                  required
+                  maxlength="2000"
+                  placeholder="例如，研发部的差旅报销需要哪些材料？"
+                ></textarea>
+              </label>
+              <details class="filters">
+                <summary>限定检索范围（手动条件始终保留）</summary>
+                <div class="filter-grid">
+                  <label>当前可用字段<select id="fieldChoice"><option value="">不添加手动条件</option></select></label>
+                  <label>匹配方式<select id="fieldOperator"></select></label>
+                </div>
+                <small id="fieldDescription"></small>
+                <label>匹配值<input id="fieldValues" placeholder="多个值用逗号分隔" maxlength="800" /></label>
+                <label>高级过滤条件（JSON，可留空）<textarea id="filterConditions" rows="3" spellcheck="false" placeholder='{"logic":"and","conditions":[]}'></textarea></label>
+                <small>字段目录按当前用户和知识库生成。手动条件始终保留，权限范围由后端强制限制。</small>
+              </details>
+              <details><summary>回答设置</summary><label>意图解析<select id="planner"><option value="auto">内部 LLM 识别意图和字段</option><option value="manual">只用手动条件与语义检索</option></select></label>
+              <label>回答流程<select id="answerEngine"><option value="single">单模型回答</option><option value="crewai">多 Agent：分析与独立核验（额外模型调用）</option></select></label></details>
+              <div class="actions">
+                <button type="submit" value="chat">生成答案</button>
+                <button class="second" type="submit" value="search">只看检索</button>
+                <button class="quiet" type="button" id="previewIntent">查看检索计划</button>
+                <button class="quiet" type="button" id="clearHistory">清空对话上下文</button>
+              </div>
+            </form>
+            <small
+              >内部 LLM 会接收问题、当前会话的最近 10 条消息、可访问字段和后端用户上下文。切换知识库或退出时清空上下文。生成答案另发送最多 8 个片段。</small
+            >
+            <div id="answer" aria-live="polite"></div>
+          </section>
           <aside>
             <section class="card">
-              <span class="eyebrow">COLLECTIONS</span>
               <h2>我的知识库</h2>
               <label>当前知识库<select id="kb"></select></label>
               <form id="kbForm">
@@ -64,20 +97,16 @@
                 ><button class="second">创建知识库</button>
               </form>
             </section>
-            <section class="card">
-              <span class="eyebrow">CONNECTIONS</span>
-              <h2>连接自检</h2>
+            <details class="card">
+              <summary>连接自检</summary>
               <p>先检查服务，再预热两个本地模型。</p>
               <div class="stack">
                 <button id="check" class="second">检查服务</button
                 ><button id="warm" class="quiet">预热并检查模型</button>
               </div>
               <div id="checks" aria-live="polite"></div>
-            </section>
-          </aside>
-          <div class="work">
+            </details>
             <section class="card">
-              <span class="eyebrow">01 &nbsp; / &nbsp; INGEST</span>
               <h2>添加资料</h2>
               <p>
                 选择一份不超过 50 MiB 的 PDF。解析后，内部 LLM 会自动识别 Metadata 字段；等待状态变为“就绪”后即可提问。
@@ -91,54 +120,17 @@
                   aria-label="选择 PDF"
                 /><button>上传入库</button>
               </form>
-              <div class="actions index-tools">
+              <details><summary>索引工具</summary><div class="actions index-tools">
                 <button id="refreshMetadata" type="button" class="quiet">刷新字段目录</button>
                 <button id="reindexKB" type="button" class="second">重新索引本知识库</button>
                 <small id="indexSummary"></small>
               </div>
+              </details>
               <div id="indexJobs" aria-live="polite"></div>
               <div id="documents"></div>
               <div id="detail"></div>
             </section>
-            <section class="card">
-              <span class="eyebrow">02 &nbsp; / &nbsp; ASK</span>
-              <h2>向知识库提问</h2>
-              <form id="askForm">
-                <label
-                  >问题<textarea
-                    id="question"
-                    rows="3"
-                    required
-                    maxlength="2000"
-                    placeholder="例如，研发部的差旅报销需要哪些材料？"
-                  ></textarea>
-                </label>
-                <details class="filters">
-                  <summary>限定检索范围（手动条件始终保留）</summary>
-                  <div class="filter-grid">
-                    <label>当前可用字段<select id="fieldChoice"><option value="">不添加手动条件</option></select></label>
-                    <label>匹配方式<select id="fieldOperator"></select></label>
-                  </div>
-                  <small id="fieldDescription"></small>
-                  <label>匹配值<input id="fieldValues" placeholder="多个值用逗号分隔" maxlength="800" /></label>
-                  <label>高级过滤条件（JSON，可留空）<textarea id="filterConditions" rows="3" spellcheck="false" placeholder='{"logic":"and","conditions":[]}'></textarea></label>
-                  <small>字段目录按当前用户和知识库生成。手动条件始终保留，权限范围由后端强制限制。</small>
-                </details>
-                <label>意图解析<select id="planner"><option value="auto">内部 LLM 识别意图和字段</option><option value="manual">只用手动条件与语义检索</option></select></label>
-                <label>回答流程<select id="answerEngine"><option value="single">单模型回答</option><option value="crewai">多 Agent：分析与独立核验（额外模型调用）</option></select></label>
-                <div class="actions">
-                  <button class="quiet" type="button" id="previewIntent">查看检索计划</button><button class="quiet" type="button" id="clearHistory">清空对话上下文</button>
-                  <button class="second" type="submit" value="search">
-                    只看检索</button
-                  ><button type="submit" value="chat">生成答案</button>
-                </div>
-              </form>
-              <small
-                >内部 LLM 会接收问题、当前会话的最近 10 条消息、可访问字段和后端用户上下文。切换知识库或退出时清空上下文。生成答案另发送最多 8 个片段。</small
-              >
-              <div id="answer" aria-live="polite"></div>
-            </section>
-          </div>
+          </aside>
         </div>
       </section>
       <div id="note" role="status" aria-live="polite"></div>

@@ -12,7 +12,6 @@ LEGACY_COLLECTION = "agent_chunks_bge_small_zh_v15_v1"
 PREVIOUS_COLLECTION = "agent_chunks_bge_small_zh_v15_meta_v2"
 COLLECTION = "agent_chunks_bge_small_zh_v15_meta_v3"
 INDEX_VERSION = 3
-COLLECTIONS = {1: LEGACY_COLLECTION, 2: PREVIOUS_COLLECTION, 3: COLLECTION}
 VECTOR_DIM = 512
 MAX_UPLOAD = 50 * 1024 * 1024
 

@@ -4,10 +4,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import db, main
-from app.config import LEGACY_COLLECTION
 from app.graphs import qa_graph, ingestion_graph
 from app.indexing import reindex_graph
-from app.intent import literal
 
 
 def ask(env, query="保留多少天？", **kw):
@@ -41,7 +39,7 @@ def test_strict_filters_never_relaxed_and_inference_recovers(env):
     env.document()
     result = ask(env, "SN-999 的记录", filters={"versions": ["9.9"]})
     assert not result["sources"]
-    assert len(result["retrieval_trace"]) >= 2
+    assert len(result["retrieval_trace"]) == 1
     assert all(
         "9.9" in expression
         for t in result["retrieval_trace"]
@@ -49,7 +47,7 @@ def test_strict_filters_never_relaxed_and_inference_recovers(env):
     )
     broad = ask(env, "SN-999 的记录")
     assert broad["sources"]
-    assert any("重试" in w for w in broad["intent"]["warnings"])
+
 
 
 def test_real_milvus_injection_value_is_literal(env):
@@ -68,30 +66,22 @@ def test_effective_filter_requires_known_boundaries(env):
 
 
 def test_reindex_keeps_old_live_until_publication_and_supports_retry(env):
-    d = env.document(legacy=True)
+    d = env.document()
     with db.connection() as con:
         job_info = db.enqueue_index(con, d["id"])
     job = db.claim_index()
-    assert ask(env)["sources"][0]["index_version"] == 1
+    assert ask(env)["sources"][0]["revision"] == d["index_revision"]
     original = env.sv.embed.embed_documents
     env.sv.embed.embed_documents = lambda texts: (_ for _ in ()).throw(
         RuntimeError("embedding failure")
     )
     with pytest.raises(RuntimeError):
         reindex_graph(env.sv).invoke({"job": job})
-    assert ask(env)["sources"][0]["index_version"] == 1
+    assert ask(env)["sources"][0]["revision"] == d["index_revision"]
     env.sv.embed.embed_documents = original
     reindex_graph(env.sv).invoke({"job": job})
     result = ask(env)
     assert result["sources"][0]["index_version"] == 3
-    assert (
-        env.sv.vectors.client.query(
-            LEGACY_COLLECTION,
-            filter=f"doc == {literal(d['id'])}",
-            output_fields=["count(*)"],
-        )[0]["count(*)"]
-        == 1
-    )
     with db.connection() as con:
         new = dict(con.execute("SELECT * FROM docs WHERE id=?", (d["id"],)).fetchone())
         assert new["index_revision"] == job_info["id"]
@@ -217,7 +207,7 @@ def test_http_auth_edit_jobs_history_rollback_and_legacy_filter(env, monkeypatch
             },
         ).json()
         assert not r["sources"]
-        assert any("旧文档" in w for w in r["intent"]["warnings"])
+        assert all(t["index_version"] == 3 for t in r["retrieval_trace"])
         r = client.post(f"/api/kbs/{env.kb}/reindex")
         assert r.status_code == 202
         job = db.claim_index()
@@ -234,8 +224,17 @@ def test_http_auth_edit_jobs_history_rollback_and_legacy_filter(env, monkeypatch
             f"/api/documents/{d['id']}/index/rollback",
             json={"revision": "", "expected_revision": detail["index_revision"]},
         )
-        assert back.status_code == 200
-        assert client.get(f"/api/documents/{d['id']}").json()["index_version"] == 1
+        assert back.status_code == 409
+        assert client.get(f"/api/documents/{d['id']}").json()["index_version"] == 3
+        client.post(f"/api/documents/{d['id']}/reindex").raise_for_status()
+        reindex_graph(env.sv).invoke({"job": db.claim_index()})
+        latest = client.get(f"/api/documents/{d['id']}").json()
+        restored = client.post(
+            f"/api/documents/{d['id']}/index/rollback",
+            json={"revision": detail["index_revision"], "expected_revision": latest["index_revision"]},
+        )
+        assert restored.status_code == 200
+        assert restored.json()["index_revision"] == detail["index_revision"]
     finally:
         main.app.dependency_overrides.clear()
         client.close()
@@ -307,3 +306,25 @@ def test_answer_citations_refer_to_exact_filtered_evidence(env):
     assert result["sources"][0]["quote"] in result["sources"][0]["text"]
     assert result["sources"][0]["metadata"]["version"] == "2.0"
     assert result["intent"]["explicit_filters"] == {"versions": ["2.0"]}
+
+
+def test_preview_and_search_share_revision_and_filter_validation(env, monkeypatch):
+    env.document()
+    monkeypatch.setattr(main.app.state, "sv", env.sv, raising=False)
+    monkeypatch.setattr(main.app.state, "qa", qa_graph(env.sv), raising=False)
+    main.app.dependency_overrides[main.account] = lambda: {"id": env.owner}
+    client = TestClient(main.app)
+    try:
+        base = f"/api/kbs/{env.kb}/"
+        body = {"question": "文档", "planner": "manual", "mode": "search"}
+        preview = client.post(base + "intent", json=body).json()
+        plan = client.post(base + "ask", json=body).json()["intent"]
+        assert plan["metadata_catalog"]["fingerprint"] == preview["metadata_catalog"]["fingerprint"]
+        for key in ("semantic_query", "routes", "explicit_filters", "field_schema"):
+            assert plan[key] == preview[key]
+        body["filters"] = {"conditions": [{"field": "attributes.missing", "operator": "eq", "values": ["x"]}]}
+        for endpoint in ("ask", "intent"):
+            assert client.post(base + endpoint, json=body).status_code == 422
+    finally:
+        main.app.dependency_overrides.pop(main.account)
+        client.close()

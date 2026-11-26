@@ -43,6 +43,8 @@ ls scripts/upgrade.py app/classify_intent.py app/crew_agents.py
 
 ## 3. 升级已有平台
 
+请先按 [升级说明](../UPGRADE.md) 在旧版本完成索引与意图模式检查。
+
 在新源码目录执行：
 
 ```bash

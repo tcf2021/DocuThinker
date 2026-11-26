@@ -17,7 +17,7 @@
 | app/db.py · retrieval_context | 后端读取用户身份、部门上下文和当前有权访问的知识库 |
 | app/services.py · agent_completion / VectorIndex.search | 调用内部模型；添加权限与版本条件后执行 Milvus 搜索 |
 
-app/intent.py 仍保留 LegacyIntentAgent 和旧 API 参数兼容编译器，供显式 rules 模式及旧客户端使用。默认 auto/llm 流程走新的 Prompt + 动态条件，不依赖旧的 doc_types→doc_type 映射。模型失败时也不会自动改用旧关键词规则冒充模型结果。
+意图模式支持 auto、llm 和 manual。手动过滤仍支持已有 API 参数。
 
 ## 2. Prompt 输入示例
 
@@ -182,7 +182,7 @@ docker compose up -d --force-recreate --wait agent
 - 一个已经验证的 LLM 条件无命中：返回无结果，不自动放宽部门、型号等约束。
 - 手动条件永远由后端保留；不会被模型扩大或替换。
 - 选择“只用手动条件与语义检索”可跳过 Intent LLM；这不关闭新文档入库的 Metadata LLM。
-- 旧 rules 模式只为兼容旧客户端保留；默认流程不使用它。如果旧 settings.json 曾设置 intent_mode=rules，升级后用 configure.py --intent-mode auto 切换。
+- 原配置使用 rules 时，请在升级前选择 manual、auto 或 llm。
 
 ## 8. 使用与 API
 

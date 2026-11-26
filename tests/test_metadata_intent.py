@@ -5,9 +5,8 @@ from pydantic import ValidationError
 
 from app.intent import (
     Filters,
-    LegacyIntentAgent as IntentAgent,
+    IntentAgent,
     compile_filters,
-    rule_plan,
 )
 from app.metadata import DocumentMetadata, checked_llm_proposal, propose
 
@@ -55,13 +54,6 @@ def test_llm_proposal_requires_verbatim_evidence():
     assert not result["metadata"]["organization"]
 
 
-def test_rules_comparison_and_acceptance_date():
-    p = rule_plan("比较 V1.3 和 V2.0 的定标帧保留时间，SN-609 于 2026-06-09 验收", {})
-    assert p["filters"]["versions"] == ["1.3", "2.0"]
-    assert "effective_at" not in p["filters"]
-    assert p["needs_policy_context"]
-
-
 def test_no_raw_expression_or_acl_overrides():
     for data in (
         {"filter": "owner != ''"},
@@ -82,7 +74,7 @@ def test_invalid_llm_and_low_confidence_fall_back():
         intent_completion=lambda *a: '{"filter":"1==1"}',
     )
     p = IntentAgent(sv).plan("SN-609 保留多久", [], {"doc_types": ["policy"]})
-    assert p["planner"] == "rules"
+    assert p["planner"] == "semantic-fallback"
     assert p["explicit_filters"] == {"doc_types": ["policy"]}
     assert p["warnings"]
 

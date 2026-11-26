@@ -67,7 +67,7 @@ def env(tmp_path, monkeypatch, milvus):
     index = VectorIndex({"milvus_uri": milvus})
     store = MemoryStore()
     sv = SimpleNamespace(
-        cfg={"intent_mode": "rules"},
+        cfg={"intent_mode": "manual"},
         vectors=index,
         embed=ConstantEmbedding(),
         store=store,

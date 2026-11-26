@@ -228,10 +228,32 @@ class QA(TypedDict, total=False):
     result: dict
 
 
+def load_catalog(sv, s):
+    docs = ready_documents(s["owner"], s["kb"])
+    snapshot = metadata_snapshot(sv, s["owner"], s["kb"], docs)
+    return {"documents": docs, "metadata_catalog": snapshot}
+
+
+def plan_query(sv, s):
+    docs = s["documents"]
+    plan = IntentAgent(sv).plan(
+        s["question"],
+        docs,
+        s.get("filters"),
+        s.get("planner", "auto"),
+        chat_history=s.get("chat_history", []),
+        user_context=db.retrieval_context(s["owner"], s["kb"]),
+        fields=s["metadata_catalog"]["filterable_fields"],
+    )
+    plan["metadata_catalog"] = {
+        k: v for k, v in s["metadata_catalog"].items() if k != "filterable_fields"
+    }
+    return {"plan": plan}
+
+
 def qa_graph(sv):
     retriever = KnowledgeBaseRetriever(sv)
     graph = StateGraph(QA)
-    agent = IntentAgent(sv)
 
     def add(name, function):
         def run(state):
@@ -251,35 +273,14 @@ def qa_graph(sv):
 
         return graph.add_node(name, run)
 
-    def load_catalog(s):
-        docs = ready_documents(s["owner"], s["kb"])
-        snapshot = metadata_snapshot(sv, s["owner"], s["kb"], docs)
-        return {"documents": docs, "metadata_catalog": snapshot}
-
-    def intent(s):
-        docs = s["documents"]
-        plan = agent.plan(
-            s["question"],
-            docs,
-            s.get("filters"),
-            s.get("planner", "auto"),
-            chat_history=s.get("chat_history", []),
-            user_context=db.retrieval_context(s["owner"], s["kb"]),
-            fields=s["metadata_catalog"]["filterable_fields"],
-        )
-        plan["metadata_catalog"] = {
-            k: v for k, v in s["metadata_catalog"].items() if k != "filterable_fields"
-        }
-        return {"plan": plan}
-
     def retrieve(s):
         rows, trace = retriever.search(
             s["owner"], s["kb"], s["question"], s["documents"], s["plan"]
         )
         return {"rows": rows, "trace": trace}
 
-    add("metadata_catalog", load_catalog)
-    add("intent", intent)
+    add("metadata_catalog", lambda s: load_catalog(sv, s))
+    add("intent", lambda s: plan_query(sv, s))
     add("retrieve", retrieve)
     add(
         "rerank",

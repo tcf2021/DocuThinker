@@ -1,6 +1,8 @@
 """Run from the NEW release in WSL. Back up the installed project before replacing code."""
 
 import argparse
+import json
+import sys
 import datetime
 import shutil
 import subprocess
@@ -8,6 +10,9 @@ from pathlib import Path
 from uuid import uuid4
 
 SOURCE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SOURCE))
+from app.readiness import check_readiness  # noqa: E402
+
 RELEASE = [
     "app",
     "scripts",
@@ -59,6 +64,10 @@ def main():
     print("旧项目：", target)
     print("备份至：", backup)
     print("保留 settings.json、.env、state；备份不复制可重新下载的 state/models 缓存。")
+    def preflight():
+        check_readiness(target / "state/metadata.sqlite", json.loads((target / "settings.json").read_text()))
+
+    preflight()
     if args.dry_run:
         return
     compose = ["docker", "compose", "--project-directory", str(target)]
@@ -77,6 +86,7 @@ def main():
         return excluded.intersection(names)
 
     try:
+        preflight()
         backup.mkdir(mode=0o700)
         shutil.copytree(target, backup, dirs_exist_ok=True, ignore=ignore)
     except Exception:
@@ -98,6 +108,8 @@ def main():
             )
         else:
             shutil.copy2(source, destination)
+    for retired in ("doclab-han.woff", "FONT-LICENSE.txt"):
+        (target / "app/static" / retired).unlink(missing_ok=True)
     print("备份完成。正在构建并启动新版…", flush=True)
     try:
         subprocess.run(
@@ -112,7 +124,7 @@ def main():
         )
         print("完整恢复步骤见 UPGRADE.md。旧 Milvus 集合仍保留。")
         raise SystemExit(1)
-    print("升级完成。打开原工作台地址，在每个知识库点击“重新索引本知识库”。")
+    print("升级完成。打开原工作台地址，核对知识库与原文引用。")
     print("备份路径：", backup)
 
 

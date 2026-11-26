@@ -45,6 +45,7 @@ function message(v) {
   notice = setTimeout(() => ($("note").textContent = ""), 6500);
 }
 async function api(path, opts = {}) {
+  const version = tokenVersion;
   const o = { ...opts, headers: { ...opts.headers } };
   if (o.body && !(o.body instanceof FormData)) {
     o.headers["Content-Type"] = "application/json";
@@ -53,7 +54,7 @@ async function api(path, opts = {}) {
   const res = await fetch(path, o);
   const data = await res.json();
   if (!res.ok) {
-    if (res.status === 401 && path !== "/api/login") showLogin();
+    if (version === tokenVersion && res.status === 401 && path !== "/api/login") showLogin();
     throw Error(
       typeof data.detail === "string"
         ? data.detail
@@ -202,21 +203,82 @@ $("uploadForm").onsubmit = async (e) => {
     if (v === tokenVersion) busy(e.target, false);
   }
 };
+let catalogRevision;
+let refreshState;
+let documentsKey, jobsKey, detailKey;
 async function refreshDocs() {
+  const version = tokenVersion;
+  if (refreshState?.version === version) {
+    refreshState.again = true;
+    return refreshState.promise;
+  }
+  const state = {version, again: false};
+  refreshState = state;
+  try {
+    state.promise = (async () => {
+      do {
+        state.again = false;
+        await refreshStatus();
+      } while (state.again && version === tokenVersion);
+    })();
+    await state.promise;
+  } finally {
+    if (refreshState === state) refreshState = undefined;
+  }
+}
+async function refreshStatus() {
   clearTimeout(poll);
   const kb = active,
     v = tokenVersion;
   if (!kb) return;
-  const [docs, jobs, meta] = await Promise.all([
+  const [docs, jobs] = await Promise.all([
     api("/api/kbs/" + kb + "/documents"),
     api("/api/kbs/" + kb + "/index-jobs"),
-    api("/api/kbs/" + kb + "/metadata"),
   ]);
   if (v !== tokenVersion) return;
   const pending = jobs.some((j) => ["queued", "running"].includes(j.status));
   $("reindexKB").disabled = pending || !docs.some((d) => d.status === "ready");
-  $("indexSummary").textContent = meta.agent_documents + " / " + meta.ready_documents + " 份就绪文档已更新字段目录";
-  updateFieldChoices(meta.filterable_fields || []);
+  const revision = JSON.stringify([v, docs.filter(d => d.status === "ready").map(d => [d.id, d.index_revision])]);
+  if (catalogRevision !== revision) {
+    catalogRevision = revision;
+    api("/api/kbs/" + kb + "/metadata").then(meta => {
+      if (v !== tokenVersion || catalogRevision !== revision) return;
+      $("indexSummary").textContent = meta.ready_documents + " 份就绪文档";
+      updateFieldChoices(meta.filterable_fields || []);
+    }).catch(err => {
+      if (v === tokenVersion && catalogRevision === revision) {
+        catalogRevision = undefined;
+        message(err.message);
+      }
+    });
+  }
+  const nextJobs = JSON.stringify([v, jobs]);
+  if (jobsKey !== nextJobs) {
+    jobsKey = nextJobs;
+    renderJobs(jobs);
+  }
+  const nextDocs = JSON.stringify([v, docs]);
+  if (documentsKey !== nextDocs) {
+    documentsKey = nextDocs;
+    renderDocs(docs, v);
+  }
+  const nextDetail = JSON.stringify([v, docs.find(d => d.id === selectedDoc), jobs.filter(j => j.doc === selectedDoc)]);
+  if (selectedDoc && detailKey !== nextDetail) {
+    detailKey = nextDetail;
+    detail(selectedDoc, v).catch(e => {
+      if (v === tokenVersion) message(e.message);
+    });
+  }
+  if (
+    v === tokenVersion &&
+    (pending || docs.some((d) => ["queued", "running"].includes(d.status)))
+  )
+    poll = setTimeout(
+      () => refreshDocs().catch((e) => message(e.message)),
+      2500,
+    );
+}
+function renderJobs(jobs) {
   $("indexJobs").replaceChildren();
   for (const job of jobs.filter((j) => j.status !== "ready").slice(0, 6)) {
     const el = make("div", job.filename + " · " + statuses[job.status] + " · " + (stages[job.stage] || job.stage), "job");
@@ -232,6 +294,8 @@ async function refreshDocs() {
     }
     $("indexJobs").append(el);
   }
+}
+function renderDocs(docs, v) {
   const panel = $("documents");
   panel.replaceChildren();
   if (!docs.length) panel.append(make("small", "这个知识库还没有文档。"));
@@ -256,15 +320,6 @@ async function refreshDocs() {
     row.append(left, b);
     panel.append(row);
   }
-  if (selectedDoc) await detail(selectedDoc, v);
-  if (
-    v === tokenVersion &&
-    (pending || docs.some((d) => ["queued", "running"].includes(d.status)))
-  )
-    poll = setTimeout(
-      () => refreshDocs().catch((e) => message(e.message)),
-      2500,
-    );
 }
 async function detail(id, v) {
   const requestNo = ++detailRequest;
@@ -493,7 +548,7 @@ async function openMetadata(d) {
   if (d.index_history.length) {
     const label = make("label", "恢复已保留的索引");
     const select = make("select");
-    for (const h of d.index_history.filter((h) => h.revision !== d.index_revision)) {
+    for (const h of d.index_history.filter((h) => h.index_version === 3 && h.revision !== d.index_revision)) {
       const opt = make("option", "v" + h.index_version + " · " + (h.revision.slice(0, 8) || "初始版本") + " · " + h.n_chunks + " 个片段");
       opt.value = h.revision; select.append(opt);
     }

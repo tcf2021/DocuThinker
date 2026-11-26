@@ -1,8 +1,3 @@
-@font-face {
-  font-family: "DocLab Han";
-  src: url("/static/doclab-han.woff") format("woff");
-  font-display: swap;
-}
 :root {
   --ink: #173433;
   --soft: #536a66;
@@ -24,7 +19,6 @@ body {
   font:
     15px/1.65 "Microsoft YaHei",
     "PingFang SC",
-    "DocLab Han",
     system-ui,
     -apple-system,
     sans-serif;
@@ -51,20 +45,6 @@ header strong {
   height: 31px;
   border-radius: 8px;
   font-size: 23px;
-}
-.brand-en,
-.eyebrow {
-  font:
-    600 10px/1.4 ui-monospace,
-    "DocLab Han",
-    monospace;
-  letter-spacing: 0.15em;
-}
-.brand-en {
-  opacity: 0.75;
-}
-.eyebrow {
-  color: #487a67;
 }
 .account {
   margin-left: auto;
@@ -114,13 +94,7 @@ small {
 .card p {
   margin-bottom: 12px;
 }
-.layout {
-  display: grid;
-  grid-template-columns: 255px minmax(0, 1fr);
-  gap: 18px;
-}
 aside,
-.work,
 .stack {
   display: grid;
   gap: 16px;
@@ -178,7 +152,6 @@ button,
 .quiet {
   font:
     600 13px/1.5 "Microsoft YaHei",
-    "DocLab Han",
     system-ui,
     sans-serif;
   border: 1px solid var(--green);
@@ -305,14 +278,8 @@ a:focus-visible {
   main {
     padding: 18px 12px 65px;
   }
-  .layout {
-    grid-template-columns: 1fr;
-  }
   .card {
     padding: 17px;
-  }
-  .brand-en {
-    display: none;
   }
   .mast {
     gap: 10px;
@@ -337,3 +304,34 @@ dialog::backdrop {background: rgb(15 33 23 / 45%);}
 #metadataJSON {font-family: ui-monospace, monospace; font-size: 13px;}
 #rollbackControls {margin-top: 20px; border-top: 1px solid #d6e3d9; padding-top: 16px;}
 @media (max-width: 650px) {.filter-grid {grid-template-columns: 1fr;} dialog {padding: 16px;}}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 24px;
+  align-items: start;
+}
+.workspace > .card {
+  padding: clamp(20px, 4vw, 44px);
+}
+.workspace h2 {
+  margin-bottom: 14px;
+}
+.workspace aside .upload {
+  display: grid;
+}
+.workspace aside input {
+  min-width: 0;
+  max-width: 100%;
+}
+#question {
+  min-height: 8em;
+  font: inherit;
+}
+:focus-visible {
+  outline: 3px solid #397d72;
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  .workspace {grid-template-columns: minmax(0, 1fr);}
+}

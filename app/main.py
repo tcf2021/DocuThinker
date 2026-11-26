@@ -16,9 +16,9 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from . import db
 from .config import DATA, MAX_UPLOAD, INDEX_VERSION, settings
-from .graphs import Worker, ingestion_graph, prefix, qa_graph
+from .graphs import Worker, ingestion_graph, prefix, qa_graph, load_catalog, plan_query
 from .indexing import cached_chunks, reindex_graph
-from .intent import Filters, IntentAgent, catalog
+from .intent import Filters, InvalidQueryFilter, catalog
 from .metadata import DocumentMetadata, AttributeKey, propose
 from .metadata_agent import discover, Discovery, FieldDescription
 from .field_schema import IntentOutput
@@ -26,6 +26,7 @@ from .metadata_catalog import metadata_snapshot
 from .parsing import Problem, mime, safe_error
 from .retrieval import ready_documents
 from .services import Services
+from .readiness import check_readiness
 
 STATIC = Path(__file__).parent / "static"
 COOKIE = "agent_session"
@@ -33,6 +34,8 @@ COOKIE = "agent_session"
 
 @asynccontextmanager
 async def lifespan(app):
+    cfg = settings()
+    check_readiness(DATA / "metadata.sqlite", cfg)
     db.init_db()
     db.requeue_interrupted()
     # Only one API process owns this spool and Milvus Lite file.
@@ -43,7 +46,7 @@ async def lifespan(app):
     for path in (DATA / "spool").iterdir():
         if path.is_file() and path.name not in retained:
             path.unlink(missing_ok=True)
-    sv = Services(settings())
+    sv = Services(cfg)
     app.state.sv = sv
     app.state.qa = qa_graph(sv)
     worker = Worker(ingestion_graph(sv), reindex_graph(sv))
@@ -133,7 +136,7 @@ class Question(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     mode: Literal["search", "chat"] = "chat"
     filters: Filters = Field(default_factory=Filters)
-    planner: Literal["auto", "rules", "llm", "manual"] = "auto"
+    planner: Literal["auto", "llm", "manual"] = "auto"
     chat_history: list[HistoryMessage] = Field(default_factory=list, max_length=10)
     answer_engine: Literal["single", "crewai"] = "single"
 
@@ -205,22 +208,10 @@ def create_kb(body: KBName, who=Depends(account)):
     return {"id": kb, "name": name}
 
 
-def visible(d):
-    return {
-        k: d[k]
-        for k in (
-            "id",
-            "filename",
-            "status",
-            "stage",
-            "attempt",
-            "n_chunks",
-            "error",
-            "created",
-            "index_version",
-            "index_revision",
-        )
-    }
+DOCUMENT_SUMMARY_COLUMNS = (
+    "id", "filename", "status", "stage", "attempt", "n_chunks",
+    "error", "created", "index_version", "index_revision",
+)
 
 
 @app.get("/api/kbs/{kb_id}/documents")
@@ -228,9 +219,9 @@ def list_docs(kb_id: str, who=Depends(account)):
     get_kb(kb_id, who)
     with db.connection() as con:
         return [
-            visible(r)
+            dict(r)
             for r in con.execute(
-                "SELECT * FROM docs WHERE kb=? ORDER BY created DESC,rowid DESC",
+                f"SELECT {', '.join(DOCUMENT_SUMMARY_COLUMNS)} FROM docs WHERE kb=? ORDER BY created DESC,rowid DESC",
                 (kb_id,),
             )
         ]
@@ -314,7 +305,7 @@ def document(doc_id: str, who=Depends(account)):
                 (doc_id,),
             )
         ]
-    return visible(d) | {
+    return {key: d[key] for key in DOCUMENT_SUMMARY_COLUMNS} | {
         "events": events,
         "files": json.loads(d["manifest"]).get("paths", []),
         "metadata": DocumentMetadata.model_validate_json(
@@ -388,23 +379,10 @@ def preview_intent(kb_id: str, body: Question, request: Request, who=Depends(acc
     get_kb(kb_id, who)
     if not body.question.strip():
         raise HTTPException(422, "请输入问题。")
-    documents = ready_documents(who["id"], kb_id)
+    state = body.model_dump() | {"owner": who["id"], "kb": kb_id, "question": body.question.strip()}
+    sv = request.app.state.sv
     try:
-        snapshot = metadata_snapshot(request.app.state.sv, who["id"], kb_id, documents)
-        plan = IntentAgent(request.app.state.sv).plan(
-            body.question.strip(),
-            documents,
-            body.filters.model_dump(),
-            body.planner,
-            chat_history=[m.model_dump() for m in body.chat_history],
-            user_context=db.retrieval_context(who["id"], kb_id),
-            fields=snapshot["filterable_fields"],
-        )
-        return plan | {
-            "metadata_catalog": {
-                k: v for k, v in snapshot.items() if k != "filterable_fields"
-            }
-        }
+        return plan_query(sv, state | load_catalog(sv, state))["plan"]
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     except Problem as exc:
@@ -537,6 +515,8 @@ def rollback_index(doc_id: str, body: RollbackRequest, who=Depends(account)):
         ).fetchone()
         if not old:
             raise HTTPException(404, "未找到保留的索引版本。")
+        if old["index_version"] != INDEX_VERSION:
+            raise HTTPException(409, "此历史索引格式已停用。")
         if pending or doc["index_revision"] != body.expected_revision:
             raise HTTPException(409, "索引任务未完成或当前版本已变化，请刷新后重试。")
         db.remember_index(con, doc)
@@ -616,6 +596,8 @@ def ask(kb_id: str, body: Question, request: Request, who=Depends(account)):
                 "answer_engine": body.answer_engine,
             }
         )["result"]
+    except InvalidQueryFilter as exc:
+        raise HTTPException(422, str(exc)) from exc
     except Exception as exc:
         raise HTTPException(502, safe_error(exc)) from exc
 

@@ -92,7 +92,7 @@ Alice 创建 `Alice-验收库`，Bob 创建 `Bob-验收库`。先各上传 `exam
 
 检查计划中的 `field_schema`、`routes[].inferred.conditions`、`semantic_query`、`confidence` 和 `needs_clarification`。每个条件的 `evidence.quote` 应能在问题、历史或获准使用的部门上下文中逐字找到；规范化后的字段值不一定与用户措辞逐字相同。
 
-**只有 `planner=llm` 才证明本次模型计划通过验证。** `manual` 是手动条件；`rules` 是显式兼容模式；`semantic-fallback` 表示模型连接、JSON、字段或依据验证失败后退回语义检索，不能算 Intent 模型成功。最终过滤表达式看“只看检索”返回的 `retrieval_trace`，不能只看模型的 JSON。
+**只有 `planner=llm` 才证明本次模型计划通过验证。** `manual` 是手动条件；`semantic-fallback` 表示模型连接、JSON、字段或依据验证失败后退回语义检索，不能算 Intent 模型成功。最终过滤表达式看“只看检索”返回的 `retrieval_trace`，不能只看模型的 JSON。
 
 ## 6. 权限验收：同时做正常请求和反向请求
 

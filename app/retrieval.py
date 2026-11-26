@@ -24,13 +24,12 @@ class KnowledgeBaseRetriever:
     def search(self, owner, kb, question, documents, plan):
         ready = {d["id"]: d for d in documents}
         current = [d for d in documents if d["index_version"] == INDEX_VERSION]
-        old = [d for d in documents if d["index_version"] != INDEX_VERSION]
         if not ready:
             return [], []
         vectors = {}
         by_id, trace = {}, []
         explicit = plan["explicit_filters"]
-        fields = plan.get("field_schema", field_catalog(documents))
+        fields = plan["field_schema"] if "field_schema" in plan else field_catalog(documents)
 
         def route(name, inferred, docs, index_version=INDEX_VERSION, query=None):
             query = query or question
@@ -85,40 +84,8 @@ class KnowledgeBaseRetriever:
             )
             return len(candidates)
 
-        first_hits = 0
-        for i, branch in enumerate(plan["routes"]):
-            count = route(
-                branch["name"], branch["inferred"], current, query=branch.get("query")
-            )
-            if i == 0:
-                first_hits = count
-        if (
-            plan.get("allow_inference_fallback", True)
-            and current
-            and not first_hits
-            and any(b["inferred"] for b in plan["routes"])
-        ):
-            # Relax only model/rule inference. Explicit constraints and ACLs stay fixed.
-            route("推断条件无命中，保留显式条件重试", {}, current)
-            plan["warnings"].append(
-                "首路推断条件未命中，已在同一知识库内保留显式筛选条件重试。"
-            )
-        if old:
-            if explicit or any(r["inferred"] for r in plan["routes"]):
-                plan["warnings"].append(
-                    f"{len(old)} 份旧文档尚未升级为通用 Metadata，已从本次显式筛选中排除；请先重新索引。"
-                )
-            else:
-                for version in sorted({d["index_version"] for d in old}):
-                    route(
-                        f"旧 v{version} 索引兼容检索",
-                        {},
-                        [d for d in old if d["index_version"] == version],
-                        index_version=version,
-                    )
-                plan["warnings"].append(
-                    f"{len(old)} 份文档仍使用旧索引；点击重新索引后可使用 Metadata 过滤。"
-                )
+        for branch in plan["routes"]:
+            route(branch["name"], branch["inferred"], current, query=branch.get("query"))
         rows = list(by_id.values())
         for row in rows:
             doc = ready[row["doc"]]

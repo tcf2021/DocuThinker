@@ -59,6 +59,6 @@ node --check app/static/app.js
 | LangGraph 编排 | [app/graphs.py](app/graphs.py) |
 | CrewAI 分析/核验 | [app/crew_agents.py](app/crew_agents.py) |
 
-当前支持 PDF 上传和按账号隔离的知识库；Word 原生上传、共享知识库及组织 RBAC 尚未实现。保留旧规则模式仅供兼容；默认 auto/llm 路径使用动态 Schema，不依赖固定业务字段映射。
+当前支持 PDF 上传和按账号隔离的知识库；Word 原生上传、共享知识库及组织 RBAC 尚未实现。默认 auto/llm 路径使用动态 Schema，不依赖固定业务字段映射。
 
 应用 v5.0；存储 Schema 沿用 v3，避免不必要的历史数据迁移。不提交 settings.json、.env、账号数据库、文档内容、模型缓存或 API Key。

@@ -1,5 +1,4 @@
 import json
-from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
@@ -10,8 +9,6 @@ from app.graphs import qa_graph
 from app.indexing import reindex_graph
 from app.intent import (
     Filters,
-    LegacyIntentAgent as IntentAgent,
-    catalog,
     compile_filters,
 )
 from app.metadata import DocumentMetadata, checked_llm_proposal, propose
@@ -25,7 +22,7 @@ def ask(env, question="资料", filters=None):
             "question": question,
             "mode": "search",
             "filters": filters or {},
-            "planner": "rules",
+            "planner": "manual",
         }
     )["result"]
 
@@ -126,59 +123,6 @@ def test_llm_attributes_need_separate_source_evidence():
     assert result["metadata"]["attributes"] == {"department": ["研发部"]}
     assert result["method"] == "llm_proposal"
     assert "attributes.department" in result["provenance"]
-
-
-def test_intent_uses_shared_attributes_and_respects_explicit_keys():
-    documents = [
-        {
-            "metadata_json": json.dumps(
-                {
-                    "attributes": {
-                        "department": ["研发部", "财务部"],
-                        "product": ["ZX100"],
-                    }
-                }
-            )
-        }
-    ]
-    available = catalog(documents)
-    assert available["attributes"]["department"] == ["研发部", "财务部"]
-    sv = SimpleNamespace(cfg={})
-    plan = IntentAgent(sv).plan(
-        "研发部的 ZX100 资料",
-        documents,
-        {"attributes": {"department": ["财务部"]}},
-        "rules",
-    )
-    assert plan["explicit_filters"] == {"attributes": {"department": ["财务部"]}}
-    assert plan["routes"][0]["inferred"]["attributes"] == {"product": ["ZX100"]}
-
-
-def test_llm_cannot_invent_attribute_keys_or_values():
-    docs = [
-        {
-            "metadata_json": json.dumps(
-                {"attributes": {"department": ["研发部"], "product": ["ZX100"]}}
-            )
-        }
-    ]
-    sv = SimpleNamespace(
-        cfg={"chat_base": "test", "chat_model": "test"},
-        intent_completion=lambda *args: json.dumps(
-            {
-                "confidence": 0.99,
-                "filters": {
-                    "attributes": {
-                        "department": ["研发部"],
-                        "unapproved": ["ZX100"],
-                        "product": ["ZX100"],
-                    }
-                },
-            }
-        ),
-    )
-    plan = IntentAgent(sv).plan("研发部资料", docs)
-    assert plan["routes"][0]["inferred"]["attributes"] == {"department": ["研发部"]}
 
 
 def test_real_milvus_attribute_and_or_and_missing(env):
@@ -293,7 +237,7 @@ def make_v2_document(env):
 
 def test_v2_remains_readable_migration_preserves_manual_values_and_rollback(env):
     d = make_v2_document(env)
-    assert ask(env)["sources"][0]["index_version"] == 2
+    assert not ask(env)["sources"]
     assert not ask(env, filters={"locations": ["南站"]})["sources"]
     with db.connection() as con:
         db.enqueue_index(con, d["id"])
@@ -325,7 +269,7 @@ def test_v2_remains_readable_migration_preserves_manual_values_and_rollback(env)
             ),
         )
     assert current["index_version"] == 3
-    assert ask(env)["sources"][0]["index_version"] == 2
+    assert not ask(env)["sources"]
     assert (
         env.sv.vectors.client.query(
             PREVIOUS_COLLECTION,
