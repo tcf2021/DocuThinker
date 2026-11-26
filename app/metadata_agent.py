@@ -61,6 +61,50 @@ def batches(chunks, max_chars=12000, max_chunks=12):
         yield group
 
 
+def source_quote(quote, text):
+    """Return the actual source span; only existing whitespace runs may differ."""
+    if quote in text:
+        return quote
+    # Never drop words, punctuation or digits, join tokens, or cross chunk borders.
+    pattern = r"\s+".join(re.escape(part) for part in re.split(r"\s+", quote))
+    match = re.search(pattern, text)
+    if match and len(match[0]) <= 800:
+        return match[0]
+    return None
+
+
+def validate_evidence(response, batch):
+    """Validate each value before merging any of this batch's proposed metadata."""
+    by_id = {chunk["chunk_id"]: chunk for chunk in batch}
+    verified, errors = [], []
+    for field in response.fields:
+        if field.key in RESERVED:
+            raise Problem("Metadata 模型返回了系统保留字段。")
+        field_evidence = []
+        for value in field.values:
+            candidates = [e for e in field.evidence if e.value == value]
+            valid, reasons = [], set()
+            if not candidates:
+                reasons.add("missing_value_evidence")
+            for item in candidates:
+                chunk = by_id.get(item.chunk_id)
+                if chunk is None:
+                    reasons.add("chunk_not_in_batch")
+                elif item.page != chunk["page"]:
+                    reasons.add("page_mismatch")
+                elif (quote := source_quote(item.quote, chunk["text"])) is None:
+                    reasons.add("quote_not_in_chunk")
+                else:
+                    valid.append(item.model_dump() | {"quote": quote})
+            if not valid:
+                errors.append(
+                    {"field": field.key, "value": value, "reasons": sorted(reasons)}
+                )
+            field_evidence.extend(valid)
+        verified.append((field, field_evidence))
+    return verified, errors
+
+
 def discover(sv, doc, chunks, preserve=True):
     with db.connection() as con:
         records = [
@@ -82,7 +126,7 @@ def discover(sv, doc, chunks, preserve=True):
         raise Problem("知识库字段目录超过 128 项，请整理重复字段后再识别。")
     old = DocumentMetadata.model_validate_json(doc.get("metadata_json", "{}"))
     previous = json.loads(doc.get("metadata_provenance", "{}"))
-    attributes, evidence, used, calls = {}, {}, {}, 0
+    attributes, evidence, used, calls, repairs = {}, {}, {}, 0, 0
     for batch in batches(chunks):
         payload = {
             "filename": doc["filename"],
@@ -91,36 +135,42 @@ def discover(sv, doc, chunks, preserve=True):
             "existing_metadata": old.model_dump(),
             "output_schema": Discovery.model_json_schema(),
         }
-        response = Discovery.model_validate(
-            parse_json(
-                sv.agent_completion(
-                    "discover_metadata", payload, max_tokens=5000, timeout=90
+        for attempt in range(2):
+            calls += 1
+            response = Discovery.model_validate(
+                parse_json(
+                    sv.agent_completion(
+                        "discover_metadata", payload, max_tokens=5000, timeout=90
+                    )
                 )
             )
-        )
-        calls += 1
-        batch_by_id = {c["chunk_id"]: c for c in batch}
-        for field in response.fields:
-            if field.key in RESERVED or field.key in {
-                "user_id",
-                "allowed_kb_ids",
-                "permissions",
-            }:
-                raise Problem("Metadata 模型返回了系统保留字段。")
-            for value in field.values:
-                valid = [
-                    e.model_dump()
-                    for e in field.evidence
-                    if e.value == value
-                    and e.chunk_id in batch_by_id
-                    and batch_by_id[e.chunk_id]["page"] == e.page
-                    and e.quote in batch_by_id[e.chunk_id]["text"]
-                ]
-                if not valid:
-                    raise Problem(
-                        "Metadata 模型给出的字段值没有有效原文依据：" + field.key
-                    )
-                evidence.setdefault("attributes." + field.key, []).extend(valid)
+            verified, errors = validate_evidence(response, batch)
+            if not errors:
+                break
+            if attempt:
+                reasons = {
+                    "missing_value_evidence": "缺少与字段值一致的 evidence.value",
+                    "chunk_not_in_batch": "引用的切片不在当前批次",
+                    "page_mismatch": "引用页码与切片页码不一致",
+                    "quote_not_in_chunk": "引用文字无法在对应原文片段中找到",
+                }
+                detail = "、".join(reasons[r] for r in errors[0]["reasons"])
+                raise Problem(
+                    "Metadata 模型给出的字段值没有有效原文依据："
+                    + errors[0]["field"]
+                    + "（已自动修正一次仍未通过；"
+                    + detail
+                    + "）。本次提案未应用。"
+                )
+            repairs += 1
+            payload = payload | {
+                "evidence_repair": {
+                    "previous_output": response.model_dump(),
+                    "validation_errors": errors,
+                }
+            }
+        for field, field_evidence in verified:
+            evidence.setdefault("attributes." + field.key, []).extend(field_evidence)
             attributes[field.key] = list(
                 dict.fromkeys(attributes.get(field.key, []) + field.values)
             )
@@ -154,12 +204,18 @@ def discover(sv, doc, chunks, preserve=True):
     return {
         "metadata": metadata,
         "method": "llm_auto",
-        "agent_version": 4,
+        "agent_version": 5,
         "schema_version": INDEX_VERSION,
         "field_definitions": used,
         "provenance": evidence,
         "previous_provenance": previous.get("provenance", {}) if preserve else {},
         "model_calls": calls,
+        "repair_attempts": repairs,
         "chunks_examined": len(chunks),
-        "notice": "字段由 LLM 识别，逐字依据和类型已校验；语义仍可能误判，可在 Metadata 编辑器修正。",
+        "notice": "字段由 LLM 识别，切片、页码、原文依据和类型已校验（仅兼容空白格式差异）；语义仍可能误判，可在 Metadata 编辑器修正。"
+        + (
+            f"其中 {repairs} 批次经过一次自动修正，无法证实的字段或值可能已移除，请核对提案。"
+            if repairs
+            else ""
+        ),
     }
