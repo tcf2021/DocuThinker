@@ -1,0 +1,12 @@
+.env
+settings.json
+state/
+__pycache__/
+*.pyc
+
+.venv/
+.crew/
+.crewai/
+.uv/
+test-results.xml
+*.log

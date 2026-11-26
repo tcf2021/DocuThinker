@@ -1,0 +1,41 @@
+name: document-agent-local
+services:
+  agent:
+    build: .
+    init: true
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      AGENT_DATA: /data
+      AGENT_SETTINGS: /run/agent/settings.json
+      HOME: /data
+      HF_HOME: /data/models/hub
+      OMP_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      TOKENIZERS_PARALLELISM: "false"
+      OTEL_SDK_DISABLED: "true"
+      CREWAI_TELEMETRY_ENABLED: "false"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      DO_NOT_TRACK: "1"
+    volumes:
+      - ./state:/data
+      - type: bind
+        source: ./settings.json
+        target: /run/agent/settings.json
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      - "127.0.0.1:${AGENT_PORT:-8020}:8020"
+    networks:
+      - objects
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/health',timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+networks:
+  objects:
+    external: true
+    name: ${MINIO_NETWORK:?run python3 scripts/configure.py}

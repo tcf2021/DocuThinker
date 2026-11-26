@@ -1,0 +1,14 @@
+# Direct runtime dependencies. requirements.txt is the resolved deployment lock.
+fastapi==0.121.3
+uvicorn==0.38.0
+python-multipart==0.0.29
+httpx==0.28.1
+minio==7.2.20
+langchain-core==1.7.4
+langchain-text-splitters==1.1.0
+langgraph==1.0.10
+pymilvus==2.5.16
+milvus-lite==2.5.1
+fastembed==0.8.0
+setuptools==80.9.0
+crewai==1.15.45
